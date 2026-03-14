@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "description": "Displays real-time keypresses with a terminal-inspired HUD.",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+        "128": "icon.png"
+    }
   },
   "permissions": [
     "storage"
@@ -14,8 +17,5 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
-  ],
-  "icons": {
-    "128": "icon.png"
-  }
+  ]
 }
