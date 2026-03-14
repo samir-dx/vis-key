@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <style>
     body {
-      width: 240px;
+      width: 250px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       padding: 16px;
       background: #f9f9f9;
@@ -24,8 +24,13 @@
       margin-bottom: 12px;
       font-size: 14px;
     }
-    .row:last-of-type {
-      margin-bottom: 16px;
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #777;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      letter-spacing: 0.5px;
     }
     /* macOS Style Toggle */
     .switch {
@@ -49,7 +54,7 @@
     input:checked + .slider { background-color: #007AFF; }
     input:checked + .slider:before { transform: translateX(18px); }
     
-    /* Segmented Control for Modes */
+    /* Segmented Control */
     .segmented-control {
       display: flex;
       background: #e3e3e8;
@@ -57,21 +62,13 @@
       padding: 2px;
     }
     .segmented-control label {
-      flex: 1;
-      text-align: center;
-      padding: 4px 8px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border-radius: 4px;
-      color: #555;
-      transition: background 0.2s, color 0.2s;
+      flex: 1; text-align: center; padding: 4px 8px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      border-radius: 4px; color: #555; transition: background 0.2s, color 0.2s;
     }
     .segmented-control input[type="radio"] { display: none; }
     .segmented-control input[type="radio"]:checked + label {
-      background: #fff;
-      color: #000;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: #fff; color: #000; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -93,7 +90,7 @@
       <span class="slider"></span>
     </label>
   </div>
-
+  <div class="section-title">Mode</div>
   <div class="segmented-control">
     <input type="radio" name="mode" id="modeSingle" value="single" checked>
     <label for="modeSingle">Single Key</label>
@@ -101,7 +98,13 @@
     <input type="radio" name="mode" id="modeBurst" value="burst">
     <label for="modeBurst">Burst Mode</label>
   </div>
-
+  <div class="section-title">Appearance</div>
+  <div class="segmented-control">
+    <input type="radio" name="theme" id="themeTerminal" value="terminal">
+    <label for="themeTerminal">Terminal</label>
+    <input type="radio" name="theme" id="themeMechanical" value="mechanical" checked>
+    <label for="themeMechanical">Mechanical</label>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
