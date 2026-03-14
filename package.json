@@ -1,0 +1,13 @@
+{
+  "name": "vis-key",
+  "version": "1.0.0",
+  "description": "Keystroke Visualizer Chrome Extension",
+  "scripts": {
+    "build": "tsc && cp manifest.json popup.html dist/ 2>/dev/null || true",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "typescript": "^5.3.0"
+  }
+}
