@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Visualize Keystrokes",
+  "name": "vis-key",
   "version": "1.0.0",
   "description": "Displays real-time keypresses with a terminal-inspired HUD.",
   "action": {
@@ -8,6 +8,10 @@
     "default_icon": {
         "128": "icon.png"
     }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   },
   "permissions": [
     "storage"
