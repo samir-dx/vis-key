@@ -34,7 +34,7 @@ class KeystrokeHUD {
     public init(): void {
         chrome.storage.local.get(['isVisualizerActive', 'displayMode', 'autoHide'], (result: { [key: string]: any }) => {
             this.displayMode = result.displayMode || 'single';
-            this.autoHide = result.autoHide !== false; // default true
+            this.autoHide = result.autoHide !== false; 
             if (result.isVisualizerActive) {
                 this.mount();
             }
@@ -48,10 +48,8 @@ class KeystrokeHUD {
             if (changes.autoHide) {
                 this.autoHide = changes.autoHide.newValue;
                 if (this.autoHide && this.displayElement && this.displayElement.classList.contains('kv-visible')) {
-                    // If turned on while keys are showing, trigger the fade out
                     this.startHideTimeout();
                 } else if (!this.autoHide && this.timeoutId !== null) {
-                    // If turned off, cancel any pending fade out
                     window.clearTimeout(this.timeoutId);
                     this.timeoutId = null;
                 }
@@ -73,7 +71,6 @@ class KeystrokeHUD {
         this.styleElement = document.createElement('style');
         this.styleElement.id = 'kv-styles';
         this.styleElement.textContent = `
-            /* The Glass Container */
             #kv-display {
                 position: fixed;
                 bottom: 50px;
@@ -93,8 +90,6 @@ class KeystrokeHUD {
                 flex-wrap: wrap;
                 gap: 12px;
                 pointer-events: auto;
-                
-                /* Auto-hide states */
                 opacity: 0;
                 visibility: hidden;
                 transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
@@ -105,13 +100,11 @@ class KeystrokeHUD {
             }
             #kv-display:active { cursor: grabbing; }
 
-            /* Grouping for Shortcuts (e.g. ⌘ + C) */
             .kv-combo-group {
                 display: flex;
                 gap: 6px;
             }
 
-            /* --- The 3D Mechanical Key Architecture --- */
             .kv-key-base {
                 position: relative;
                 background-color: #111; 
@@ -122,7 +115,7 @@ class KeystrokeHUD {
 
             .kv-key-top {
                 position: relative;
-                bottom: 8px; 
+                bottom: 8px; /* Default Up Position */
                 background-color: #ffffff;
                 color: #000;
                 border: 1.5px solid #111;
@@ -137,12 +130,22 @@ class KeystrokeHUD {
                 justify-content: center;
                 min-width: 28px;
                 box-sizing: border-box;
-                
-                animation: mechanical-press 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             .kv-key-top.kv-space {
                 min-width: 120px;
+            }
+
+            /* STATE 1: Held Down (Modifiers) */
+            .kv-key-held {
+                bottom: 4px !important; 
+                background-color: #e4e4e7 !important;
+                transition: bottom 0.05s, background-color 0.05s;
+            }
+
+            /* STATE 2: Tapped (Final Key) */
+            .kv-key-tap {
+                animation: mechanical-press 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             }
 
             @keyframes mechanical-press {
@@ -188,7 +191,6 @@ class KeystrokeHUD {
         this.timeoutId = window.setTimeout(() => {
             if (this.displayElement) {
                 this.displayElement.classList.remove('kv-visible');
-                // Wait for opacity transition before clearing DOM
                 setTimeout(() => {
                     if (this.displayElement && !this.displayElement.classList.contains('kv-visible')) {
                         this.displayElement.innerHTML = ''; 
@@ -218,12 +220,18 @@ class KeystrokeHUD {
             keyText.push(mainKey);
         }
 
+        // Updated Render Logic to apply held vs tap states
         const renderBlock = (keys: string[]) => {
-            return keys.map(k => `
-                <div class="kv-key-base">
-                    <div class="kv-key-top ${k === '␣' ? 'kv-space' : ''}">${k}</div>
-                </div>
-            `).join('');
+            return keys.map((k, index) => {
+                const isLast = index === keys.length - 1;
+                const actionClass = isLast ? 'kv-key-tap' : 'kv-key-held';
+                const spaceClass = k === '␣' ? 'kv-space' : '';
+                return `
+                    <div class="kv-key-base">
+                        <div class="kv-key-top ${actionClass} ${spaceClass}">${k}</div>
+                    </div>
+                `;
+            }).join('');
         };
 
         const comboDiv = document.createElement('div');
@@ -250,7 +258,6 @@ class KeystrokeHUD {
             this.timeoutId = null;
         }
 
-        // Only trigger the hide countdown if autoHide is enabled
         if (this.autoHide) {
             this.startHideTimeout();
         }
