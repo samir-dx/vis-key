@@ -5,14 +5,14 @@
   <style>
     :root {
       --term-bg: #000000; --term-text: #00ff00;
-      --mech-bg: #ffffff; --mech-text: #000000; --mech-shadow: #a3a3a3;
+      --mech-bg: #ffffff; --mech-text: #000000; 
+      --mech-shadow: #111111; --mech-border: #111111;
     }
     body { width: 360px; margin: 0 auto; padding: 30px 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f9f9f9; color: #333; }
     .header { font-weight: 600; font-size: 22px; margin-bottom: 24px; color: #111; border-bottom: 1px solid #eaeaea; padding-bottom: 12px; }
     .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
     .section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; margin: 24px 0 12px 0; letter-spacing: 0.5px; }
     
-    /* Toggles */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px; }
@@ -20,14 +20,12 @@
     input:checked + .slider { background-color: #007AFF; }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Segmented Control */
     .segmented-control { display: flex; background: #e3e3e8; border-radius: 8px; padding: 3px; margin-bottom: 8px; }
     .segmented-control label { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: #555; transition: 0.2s; }
     .segmented-control input[type="radio"] { display: none; }
     .segmented-control input[type="radio"]:checked + label { background: #fff; color: #000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .helper-text { font-size: 12px; color: #666; line-height: 1.4; margin-bottom: 16px; }
 
-    /* Theme Customizer */
     .theme-panel { background: #fff; padding: 16px; border-radius: 10px; border: 1px solid #eaeaea; display: none; }
     .theme-panel.active { display: block; }
     
@@ -38,8 +36,12 @@
     
     .preview-mechanical { display: flex; gap: 8px; }
     .preview-mechanical .kv-key-base { position: relative; background-color: var(--mech-shadow); border-radius: 12px; box-shadow: 0 3px 0 rgba(0,0,0,0.8), 0 4px 8px rgba(0,0,0,0.4); height: 44px; }
-    .preview-mechanical .kv-key-top { position: relative; bottom: 6px; background-color: var(--mech-bg); color: var(--mech-text); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; height: 100%; padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
-    .preview-mechanical .kv-key-held { bottom: 0px; background-color: var(--mech-shadow); }
+    
+    /* ADDED var(--mech-border) here */
+    .preview-mechanical .kv-key-top { position: relative; bottom: 6px; background-color: var(--mech-bg); color: var(--mech-text); border: 1.5px solid var(--mech-border); border-radius: 8px; height: 100%; padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; transition: filter 0.1s; }
+    
+    /* REPLACED background color swap with brightness filter */
+    .preview-mechanical .kv-key-held { bottom: 0px; filter: brightness(0.85); }
     /* --------------------- */
 
     .color-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; font-weight: 500; }
@@ -50,10 +52,8 @@
     .presets { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
     .preset-btn { border: 1px solid #ddd; background: #fff; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.1s; display: flex; align-items: center; gap: 6px; color: #444; }
     .preset-btn:hover { background: #f0f0f0; }
-    .preset-dot { width: 12px; height: 12px; border-radius: 50%;overflow: hidden;
-        transform: rotate(35deg);display:flex;
-        position: relative; border: 0.5px solid rgba(0,0,0,0.8); }
-    .preset-dot-inner{width: 50%;height: 100%;};
+    .preset-dot { width: 12px; height: 12px; border-radius: 50%; overflow: hidden; transform: rotate(35deg); display: flex; position: relative; border: 0.5px solid rgba(0,0,0,0.8); }
+    .preset-dot-inner { width: 50%; height: 100%; }
   </style>
 </head>
 <body>
@@ -94,7 +94,7 @@
     </div>
     <div class="color-row"><span>Key Background Color</span><input type="color" id="mechBgColor"></div>
     <div class="color-row"><span>Key Text Color</span><input type="color" id="mechTextColor"></div>
-    <div class="helper-text" style="margin-top: 8px; margin-bottom: 0;">* The 3D shadow is auto-calculated perfectly based on your background choice.</div>
+    <div class="helper-text" style="margin-top: 8px; margin-bottom: 0;">* 3D shadow is auto-calculated perfectly based on your background.</div>
     <div class="section-title" style="margin-top: 16px;">Presets</div>
     <div class="presets" id="mechPresets"></div>
   </div>

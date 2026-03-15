@@ -1,4 +1,3 @@
-// Helper to darken a hex color string for the 3D Mechanical shadow
 const getDarkerHex = (hex: string, factor: number = 0.65): string => {
   hex = hex.replace('#', '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -16,7 +15,9 @@ const termPresets = [
 ];
 
 const mechPresets = [
-  { name: 'Carbon', bg: '#ffffff', text: '#000000' },
+  // Added EXPLICIT overrides for the Classic OG shadow and border
+  { name: 'Classic', bg: '#ffffff', text: '#000000', shadow: '#111111', border: '#111111' }, 
+  { name: 'Carbon', bg: '#2b2b2b', text: '#f2f2f2', shadow:'#fff', border: '#fff' },
   { name: 'Matrix', bg: '#00ff00', text: '#000000' },
   { name: 'Dracula', bg: '#ff79c6', text: '#282a36' },
   { name: 'CyberPunk', bg: '#00ffff', text: '#090422' },
@@ -40,31 +41,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const mechBg = document.getElementById('mechBgColor') as HTMLInputElement;
   const mechText = document.getElementById('mechTextColor') as HTMLInputElement;
 
-  // --- LIVE PREVIEW ENGINE ---
-  const updateLivePreview = () => {
+  const updateLivePreview = (customShadow?: string, customBorder?: string) => {
     const root = document.documentElement;
-    // Set variables for Terminal
     root.style.setProperty('--term-bg', termBg.value);
     root.style.setProperty('--term-text', termText.value);
-    // Set variables for Mechanical
     root.style.setProperty('--mech-bg', mechBg.value);
     root.style.setProperty('--mech-text', mechText.value);
-    root.style.setProperty('--mech-shadow', getDarkerHex(mechBg.value));
+    root.style.setProperty('--mech-shadow', customShadow || getDarkerHex(mechBg.value));
+    
+    // Auto-calculate border as a slightly darker variant if not explicitly provided
+    root.style.setProperty('--mech-border', customBorder || getDarkerHex(mechBg.value, 0.8));
   };
 
-  // --- SAVE STATE ENGINE ---
-  const saveColors = () => {
-    updateLivePreview(); // Instantly update UI
+  const saveColors = (customShadow?: string, customBorder?: string) => {
+    const finalShadow = customShadow || getDarkerHex(mechBg.value);
+    const finalBorder = customBorder || getDarkerHex(mechBg.value, 0.8);
+    
+    updateLivePreview(finalShadow, finalBorder); 
     chrome.storage.local.set({
       termBg: termBg.value,
       termText: termText.value,
       mechBg: mechBg.value,
       mechText: mechText.value,
-      mechShadow: getDarkerHex(mechBg.value)
+      mechShadow: finalShadow,
+      mechBorder: finalBorder
     });
   };
 
-  // Render Preset Buttons
   const renderPresets = (containerId: string, presets: any[], isTerm: boolean) => {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -78,10 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.onclick = () => {
         if (isTerm) {
           termBg.value = p.bg; termText.value = p.text;
+          saveColors();
         } else {
           mechBg.value = p.bg; mechText.value = p.text;
+          saveColors(p.shadow, p.border); // Pass custom overrides here!
         }
-        saveColors(); // Save and update preview
       };
       container.appendChild(btn);
     });
@@ -90,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPresets('termPresets', termPresets, true);
   renderPresets('mechPresets', mechPresets, false);
 
-  // Load Initial State
   chrome.storage.local.get(null, (res) => {
     toggleVis.checked = res.isVisualizerActive || false;
     toggleHide.checked = res.autoHide !== false;
@@ -102,21 +105,20 @@ document.addEventListener('DOMContentLoaded', () => {
     (document.querySelector(`input[name="theme"][value="${theme}"]`) as HTMLInputElement).checked = true;
     updatePanels(theme);
 
-    // Load Colors & Initialize Previews
     termBg.value = res.termBg || '#000000';
     termText.value = res.termText || '#00ff00';
     mechBg.value = res.mechBg || '#ffffff';
     mechText.value = res.mechText || '#000000';
-    updateLivePreview();
+    
+    // Load preview with saved overrides
+    updateLivePreview(res.mechShadow, res.mechBorder);
   });
 
-  // Panel Switcher
   const updatePanels = (theme: string) => {
     panelTerm.classList.toggle('active', theme === 'terminal');
     panelMech.classList.toggle('active', theme === 'mechanical');
   };
 
-  // Listeners: Toggles & Radios
   toggleVis.addEventListener('change', e => chrome.storage.local.set({ isVisualizerActive: (e.target as HTMLInputElement).checked }));
   toggleHide.addEventListener('change', e => chrome.storage.local.set({ autoHide: (e.target as HTMLInputElement).checked }));
   modeRadios.forEach(r => r.addEventListener('change', e => chrome.storage.local.set({ displayMode: (e.target as HTMLInputElement).value })));
@@ -126,8 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePanels(t);
   }));
 
-  // Attach Real-Time Preview to Color Inputs
   [termBg, termText, mechBg, mechText].forEach(input => {
-    input.addEventListener('input', saveColors); 
+    input.addEventListener('input', () => saveColors()); 
   });
 });

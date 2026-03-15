@@ -16,7 +16,7 @@ class KeystrokeHUD {
     private styleElement: HTMLStyleElement | null;
     private timeoutId: number | null;
     private dragState: DragState;
-    private terminalBurstBuffer: string[]; // State buffer strictly for the terminal theme
+    private terminalBurstBuffer: string[]; 
 
     constructor() {
         this.isActive = false;
@@ -41,7 +41,9 @@ class KeystrokeHUD {
             this.displayMode = result.displayMode || 'single';
             this.theme = result.theme || 'mechanical';
             this.autoHide = result.autoHide !== false; 
-            if (result.isVisualizerActive) this.mount();
+            if (result.isVisualizerActive) {
+                this.mount();
+            }
             this.updateCSSVariables(result);
         });
 
@@ -67,25 +69,27 @@ class KeystrokeHUD {
                 }
             }
             if (changes.isVisualizerActive) {
-                if (changes.isVisualizerActive.newValue) this.mount();
-                else this.unmount();
+                if (changes.isVisualizerActive.newValue) {
+                    this.mount();
+                } else {
+                    this.unmount();
+                }
             }
             
-            // Re-fetch storage to update colors if any of them changed
-            if (changes.termBg || changes.termText || changes.mechBg || changes.mechText || changes.mechShadow) {
+            // Update live colors if they change in the options page
+            if (changes.termBg || changes.termText || changes.mechBg || changes.mechText || changes.mechShadow || changes.mechBorder) {
                 chrome.storage.local.get(null, (res) => this.updateCSSVariables(res));
             }
         });
     }
 
-    private updateCSSVariables(res: any): void {
+    private updateCSSVariables(res: { [key: string]: any }): void {
         if (!this.displayElement) return;
         
-        // Terminal: Convert Hex to RGBA for glassy background (85% opacity)
         const hex = (res.termBg || '#000000').replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
+        const r = parseInt(hex.substring(0, 2), 16) || 0;
+        const g = parseInt(hex.substring(2, 4), 16) || 0;
+        const b = parseInt(hex.substring(4, 6), 16) || 0;
         const termBgRgba = `rgba(${r}, ${g}, ${b}, 0.85)`;
 
         this.displayElement.style.setProperty('--term-bg', termBgRgba);
@@ -93,7 +97,8 @@ class KeystrokeHUD {
         
         this.displayElement.style.setProperty('--mech-bg', res.mechBg || '#ffffff');
         this.displayElement.style.setProperty('--mech-text', res.mechText || '#000000');
-        this.displayElement.style.setProperty('--mech-shadow', res.mechShadow || '#a3a3a3');
+        this.displayElement.style.setProperty('--mech-shadow', res.mechShadow || '#111111');
+        this.displayElement.style.setProperty('--mech-border', res.mechBorder || '#111111');
     }
 
     private clearDisplay(): void {
@@ -121,12 +126,13 @@ class KeystrokeHUD {
                 transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
                 box-sizing: border-box;
 
-                /* CSS Variables Setup */
+                /* Default Fallback Variables */
                 --term-bg: rgba(0, 0, 0, 0.85);
                 --term-text: #00ff00;
                 --mech-bg: #ffffff;
                 --mech-text: #000000;
-                --mech-shadow: #a3a3a3;
+                --mech-shadow: #111111;
+                --mech-border: #111111;
             }
             #kv-display.kv-visible { opacity: 1; visibility: visible; }
             #kv-display:active { cursor: grabbing; }
@@ -160,9 +166,9 @@ class KeystrokeHUD {
                ========================================= */
             #kv-display.kv-theme-mechanical {
                 background: rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
+                border-radius: 16px;
                 box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;
-                backdrop-filter: blur(5px);
+                backdrop-filter: blur(8px);
                 -webkit-backdrop-filter: blur(8px);
                 border: 1px solid rgba(255, 255, 255, 0.2);
                 padding: 16px 8px 10px;
@@ -171,15 +177,51 @@ class KeystrokeHUD {
                 gap: 12px;
             }
             .kv-combo-group { display: flex; gap: 6px; }
-            .kv-key-base { position: relative; background-color: var(--mech-shadow); border-radius: 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.8), 0 6px 12px rgba(0,0,0,0.5); height: 52px; }
-            .kv-key-top { position: relative; bottom: 8px; background-color: var(--mech-bg); color: var(--mech-text); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px; height: 100%; padding: 0 18px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 28px; box-sizing: border-box; }
+            
+            .kv-key-base { 
+                position: relative; 
+                background-color: var(--mech-shadow); 
+                border-radius: 16px; 
+                box-shadow: 0 4px 0 rgba(0,0,0,0.8), 0 6px 12px rgba(0,0,0,0.5); 
+                height: 52px; 
+            }
+            
+            /* Uses the custom border, background, and text color */
+            .kv-key-top { 
+                position: relative; 
+                bottom: 8px; 
+                background-color: var(--mech-bg); 
+                color: var(--mech-text); 
+                border: 1.5px solid var(--mech-border); 
+                border-radius: 12px; 
+                height: 100%; 
+                padding: 0 18px; 
+                font-family: 'JetBrains Mono', 'SF Mono', monospace; 
+                font-size: 24px; 
+                font-weight: 800; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                min-width: 28px; 
+                box-sizing: border-box; 
+                transition: filter 0.1s;
+            }
+            
             .kv-key-top.kv-space { min-width: 120px; }
-            .kv-key-held { bottom: 0px !important; background-color: var(--mech-shadow) !important; transition: bottom 0.05s, background-color 0.05s; }
+            
+            /* REPLACED background swap with brightness filter */
+            .kv-key-held { 
+                bottom: 0px !important; 
+                filter: brightness(0.85); 
+                transition: bottom 0.05s, filter 0.05s; 
+            }
+            
             .kv-key-tap { animation: mechanical-press 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+            
             @keyframes mechanical-press {
-                0% { bottom: 8px; }
-                40% { bottom: 0px; background-color: var(--mech-shadow); }
-                100% { bottom: 8px; background-color: var(--mech-bg); }
+                0% { bottom: 8px; filter: brightness(1); }
+                40% { bottom: 0px; filter: brightness(0.85); }
+                100% { bottom: 8px; filter: brightness(1); }
             }
         `;
         document.head.appendChild(this.styleElement);
@@ -189,7 +231,7 @@ class KeystrokeHUD {
         this.displayElement.className = `kv-theme-${this.theme}`;
         document.body.appendChild(this.displayElement);
 
-        // Fetch colors immediately upon mount to ensure variables are set
+        // Fetch colors immediately upon mount
         chrome.storage.local.get(null, (res) => this.updateCSSVariables(res));
 
         window.addEventListener('keydown', this.handleKeyDown, true);
@@ -253,14 +295,12 @@ class KeystrokeHUD {
             keyText.push(mainKey);
         }
 
-        // --- THEME RENDERING BRANCH ---
         if (this.theme === 'terminal') {
             const shortcutStr = keyText.join(' + ');
 
             if (this.displayMode === 'single') {
                 this.displayElement.innerText = shortcutStr;
             } else {
-                // Terminal Burst Logic (String Manipulation)
                 if (e.key === 'Backspace') {
                     this.terminalBurstBuffer.pop();
                 } else {
@@ -276,7 +316,6 @@ class KeystrokeHUD {
                 this.displayElement.innerText = this.terminalBurstBuffer.join('') || '...';
             }
 
-            // Terminal Animation Trigger
             this.displayElement.classList.remove('kv-animate');
             void this.displayElement.offsetWidth; 
             this.displayElement.classList.add('kv-animate');
@@ -303,7 +342,6 @@ class KeystrokeHUD {
                 this.displayElement.innerHTML = '';
                 this.displayElement.appendChild(comboDiv);
             } else {
-                // Mechanical Burst Logic (DOM Node Manipulation)
                 if (e.key === 'Backspace') {
                     if (this.displayElement.lastChild) {
                         this.displayElement.lastChild.remove();
@@ -313,7 +351,6 @@ class KeystrokeHUD {
                 }
             }
         }
-        // ------------------------------
 
         this.displayElement.classList.add('kv-visible');
 
