@@ -37,13 +37,12 @@ class KeystrokeHUD {
     }
 
     public init(): void {
-        chrome.storage.local.get(['isVisualizerActive', 'displayMode', 'autoHide', 'theme'], (result: { [key: string]: any }) => {
+        chrome.storage.local.get(null, (result: { [key: string]: any }) => {
             this.displayMode = result.displayMode || 'single';
             this.theme = result.theme || 'mechanical';
             this.autoHide = result.autoHide !== false; 
-            if (result.isVisualizerActive) {
-                this.mount();
-            }
+            if (result.isVisualizerActive) this.mount();
+            this.updateCSSVariables(result);
         });
 
         chrome.storage.onChanged.addListener((changes: { [key: string]: chrome.storage.StorageChange }) => {
@@ -54,7 +53,6 @@ class KeystrokeHUD {
             if (changes.theme) {
                 this.theme = changes.theme.newValue as Theme;
                 if (this.displayElement) {
-                    // Swap the theme class
                     this.displayElement.className = `kv-theme-${this.theme}`;
                     this.clearDisplay();
                 }
@@ -69,13 +67,33 @@ class KeystrokeHUD {
                 }
             }
             if (changes.isVisualizerActive) {
-                if (changes.isVisualizerActive.newValue) {
-                    this.mount();
-                } else {
-                    this.unmount();
-                }
+                if (changes.isVisualizerActive.newValue) this.mount();
+                else this.unmount();
+            }
+            
+            // Re-fetch storage to update colors if any of them changed
+            if (changes.termBg || changes.termText || changes.mechBg || changes.mechText || changes.mechShadow) {
+                chrome.storage.local.get(null, (res) => this.updateCSSVariables(res));
             }
         });
+    }
+
+    private updateCSSVariables(res: any): void {
+        if (!this.displayElement) return;
+        
+        // Terminal: Convert Hex to RGBA for glassy background (85% opacity)
+        const hex = (res.termBg || '#000000').replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const termBgRgba = `rgba(${r}, ${g}, ${b}, 0.85)`;
+
+        this.displayElement.style.setProperty('--term-bg', termBgRgba);
+        this.displayElement.style.setProperty('--term-text', res.termText || '#00ff00');
+        
+        this.displayElement.style.setProperty('--mech-bg', res.mechBg || '#ffffff');
+        this.displayElement.style.setProperty('--mech-text', res.mechText || '#000000');
+        this.displayElement.style.setProperty('--mech-shadow', res.mechShadow || '#a3a3a3');
     }
 
     private clearDisplay(): void {
@@ -90,7 +108,6 @@ class KeystrokeHUD {
         this.styleElement = document.createElement('style');
         this.styleElement.id = 'kv-styles';
         this.styleElement.textContent = `
-            /* Base Container - Shared Properties */
             #kv-display {
                 position: fixed;
                 bottom: 50px;
@@ -103,6 +120,13 @@ class KeystrokeHUD {
                 visibility: hidden;
                 transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
                 box-sizing: border-box;
+
+                /* CSS Variables Setup */
+                --term-bg: rgba(0, 0, 0, 0.85);
+                --term-text: #00ff00;
+                --mech-bg: #ffffff;
+                --mech-text: #000000;
+                --mech-shadow: #a3a3a3;
             }
             #kv-display.kv-visible { opacity: 1; visibility: visible; }
             #kv-display:active { cursor: grabbing; }
@@ -112,9 +136,9 @@ class KeystrokeHUD {
                ========================================= */
             #kv-display.kv-theme-terminal {
                 padding: 12px 20px;
-                background: rgba(0, 0, 0, 0.85);
-                color: #00ff00;
-                border: 1px solid #444;
+                background: var(--term-bg);
+                color: var(--term-text);
+                border: 1px solid rgba(255,255,255,0.1);
                 font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
                 font-size: 19px;
                 font-weight: bold;
@@ -122,49 +146,51 @@ class KeystrokeHUD {
                 box-shadow: 0 4px 15px rgba(0,0,0,0.4);
                 min-width: 100px;
                 text-align: center;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
             }
             .kv-theme-terminal.kv-animate { animation: kv-blink-term 0.12s ease-out; }
             @keyframes kv-blink-term {
-                0% { background: rgba(30, 30, 30, 0.9); transform: scale(0.95); color: #06402B; }
-                100% { background: rgba(0, 0, 0, 0.85); transform: scale(1); color: #00ff00; }
+                0% { transform: scale(0.95); opacity: 0.7; }
+                100% { transform: scale(1); opacity: 1; }
             }
 
             /* =========================================
                THEME: MECHANICAL
                ========================================= */
             #kv-display.kv-theme-mechanical {
-                inset: 193px auto auto 425px;
-                background: rgba(255, 255, 255, 0.2);
-                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
                 box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 30px;
                 backdrop-filter: blur(5px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 padding: 16px 8px 10px;
-                border-radius: 12px;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 12px;
             }
-            /* Mechanical specific styles */
             .kv-combo-group { display: flex; gap: 6px; }
-            .kv-key-base { position: relative; background-color: #111; border-radius: 16px; box-shadow: 0 4px 0 #000, 0 6px 12px rgba(0,0,0,0.5); height: 52px; }
-            .kv-key-top { position: relative; bottom: 8px; background-color: #ffffff; color: #000; border: 1.5px solid #111; border-radius: 12px; height: 100%; padding: 0 18px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 28px; box-sizing: border-box; }
+            .kv-key-base { position: relative; background-color: var(--mech-shadow); border-radius: 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.8), 0 6px 12px rgba(0,0,0,0.5); height: 52px; }
+            .kv-key-top { position: relative; bottom: 8px; background-color: var(--mech-bg); color: var(--mech-text); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px; height: 100%; padding: 0 18px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 28px; box-sizing: border-box; }
             .kv-key-top.kv-space { min-width: 120px; }
-            .kv-key-held { bottom: 0px !important; background-color: #e4e4e7 !important; transition: bottom 0.05s, background-color 0.05s; }
+            .kv-key-held { bottom: 0px !important; background-color: var(--mech-shadow) !important; transition: bottom 0.05s, background-color 0.05s; }
             .kv-key-tap { animation: mechanical-press 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
             @keyframes mechanical-press {
                 0% { bottom: 8px; }
-                40% { bottom: 0px; background-color: #e4e4e7; }
-                100% { bottom: 8px; background-color: #ffffff; }
+                40% { bottom: 0px; background-color: var(--mech-shadow); }
+                100% { bottom: 8px; background-color: var(--mech-bg); }
             }
         `;
         document.head.appendChild(this.styleElement);
 
         this.displayElement = document.createElement('div');
         this.displayElement.id = 'kv-display';
-        // Apply the initial theme class
         this.displayElement.className = `kv-theme-${this.theme}`;
         document.body.appendChild(this.displayElement);
+
+        // Fetch colors immediately upon mount to ensure variables are set
+        chrome.storage.local.get(null, (res) => this.updateCSSVariables(res));
 
         window.addEventListener('keydown', this.handleKeyDown, true);
         this.displayElement.addEventListener('mousedown', this.handleMouseDown);

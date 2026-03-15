@@ -12,6 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["content.ts", "popup.ts"],
+  "include": ["content.ts", "popup.ts", "options.ts"],
   "exclude": ["node_modules", "dist"]
 }

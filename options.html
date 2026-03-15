@@ -3,37 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body {
-      width: 320px; margin: 0 auto; padding: 30px 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f9f9f9; color: #333;
+    :root {
+      --term-bg: #000000; --term-text: #00ff00;
+      --mech-bg: #ffffff; --mech-text: #000000; --mech-shadow: #a3a3a3;
     }
-    .header { font-weight: 600; font-size: 20px; margin-bottom: 24px; color: #111; }
-    .section-title { font-size: 12px; font-weight: 600; color: #777; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
-    .segmented-control { display: flex; background: #e3e3e8; border-radius: 8px; padding: 3px; margin-bottom: 24px; }
-    .segmented-control label {
-      flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 500;
-      cursor: pointer; border-radius: 6px; color: #555; transition: 0.2s;
-    }
+    body { width: 360px; margin: 0 auto; padding: 30px 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f9f9f9; color: #333; }
+    .header { font-weight: 600; font-size: 22px; margin-bottom: 24px; color: #111; border-bottom: 1px solid #eaeaea; padding-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
+    .section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; margin: 24px 0 12px 0; letter-spacing: 0.5px; }
+    
+    /* Toggles */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .slider { background-color: #007AFF; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Segmented Control */
+    .segmented-control { display: flex; background: #e3e3e8; border-radius: 8px; padding: 3px; margin-bottom: 8px; }
+    .segmented-control label { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: #555; transition: 0.2s; }
     .segmented-control input[type="radio"] { display: none; }
     .segmented-control input[type="radio"]:checked + label { background: #fff; color: #000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .helper-text { font-size: 12px; color: #666; line-height: 1.4; margin-top: -16px; margin-bottom: 24px; }
+    .helper-text { font-size: 12px; color: #666; line-height: 1.4; margin-bottom: 16px; }
+
+    /* Theme Customizer */
+    .theme-panel { background: #fff; padding: 16px; border-radius: 10px; border: 1px solid #eaeaea; display: none; }
+    .theme-panel.active { display: block; }
+    
+    /* --- PREVIEW STAGE --- */
+    .preview-box { margin-bottom: 16px; height: 100px; background: #e3e3e8; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #d1d1d6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    
+    .preview-terminal { padding: 12px 20px; background: var(--term-bg); color: var(--term-text); border: 1px solid rgba(255,255,255,0.1); font-family: 'JetBrains Mono', monospace; font-size: 19px; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    
+    .preview-mechanical { display: flex; gap: 8px; }
+    .preview-mechanical .kv-key-base { position: relative; background-color: var(--mech-shadow); border-radius: 12px; box-shadow: 0 3px 0 rgba(0,0,0,0.8), 0 4px 8px rgba(0,0,0,0.4); height: 44px; }
+    .preview-mechanical .kv-key-top { position: relative; bottom: 6px; background-color: var(--mech-bg); color: var(--mech-text); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; height: 100%; padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .preview-mechanical .kv-key-held { bottom: 0px; background-color: var(--mech-shadow); }
+    /* --------------------- */
+
+    .color-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; font-weight: 500; }
+    input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+    .presets { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .preset-btn { border: 1px solid #ddd; background: #fff; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.1s; display: flex; align-items: center; gap: 6px; color: #444; }
+    .preset-btn:hover { background: #f0f0f0; }
+    .preset-dot { width: 12px; height: 12px; border-radius: 50%;overflow: hidden;
+        transform: rotate(35deg);display:flex;
+        position: relative; border: 0.5px solid rgba(0,0,0,0.8); }
+    .preset-dot-inner{width: 50%;height: 100%;};
   </style>
 </head>
 <body>
   <div class="header">vis-key Settings</div>
   
+  <div class="row"><span>Enable Overlay</span><label class="switch"><input type="checkbox" id="toggleVisualizer"><span class="slider"></span></label></div>
+  <div class="row"><span>Hide When Inactive</span><label class="switch"><input type="checkbox" id="toggleAutoHide"><span class="slider"></span></label></div>
+
   <div class="section-title">Display Mode</div>
   <div class="segmented-control">
-    <input type="radio" name="mode" id="modeSingle" value="single" checked>
-    <label for="modeSingle">Single (Default)</label>
-    
-    <input type="radio" name="mode" id="modeBurst" value="burst">
-    <label for="modeBurst">Burst</label>
+    <input type="radio" name="mode" id="modeSingle" value="single"><label for="modeSingle">Single</label>
+    <input type="radio" name="mode" id="modeBurst" value="burst"><label for="modeBurst">Burst</label>
   </div>
-  <div class="helper-text">
-    <strong>Single:</strong> Shows only the most recent shortcut.<br>
-    <strong>Burst:</strong> Strings characters together into a sentence with a 1s timeout.
+  <div class="helper-text"><strong>Single:</strong> Most recent shortcut.<br><strong>Burst:</strong> Sentence string with a 1s timeout.</div>
+
+  <div class="section-title">Appearance Engine</div>
+  <div class="segmented-control" style="margin-bottom: 16px;">
+    <input type="radio" name="theme" id="themeTerminal" value="terminal"><label for="themeTerminal">Terminal</label>
+    <input type="radio" name="theme" id="themeMechanical" value="mechanical"><label for="themeMechanical">Mechanical</label>
+  </div>
+
+  <div class="theme-panel" id="panelTerminal">
+    <div class="preview-box">
+      <div class="preview-terminal">⌘ + K</div>
+    </div>
+    <div class="color-row"><span>Background Color</span><input type="color" id="termBgColor"></div>
+    <div class="color-row"><span>Text Color</span><input type="color" id="termTextColor"></div>
+    <div class="section-title" style="margin-top: 16px;">Presets</div>
+    <div class="presets" id="termPresets"></div>
+  </div>
+
+  <div class="theme-panel" id="panelMechanical">
+    <div class="preview-box">
+      <div class="preview-mechanical">
+        <div class="kv-key-base"><div class="kv-key-top kv-key-held">⌘</div></div>
+        <div class="kv-key-base"><div class="kv-key-top">K</div></div>
+      </div>
+    </div>
+    <div class="color-row"><span>Key Background Color</span><input type="color" id="mechBgColor"></div>
+    <div class="color-row"><span>Key Text Color</span><input type="color" id="mechTextColor"></div>
+    <div class="helper-text" style="margin-top: 8px; margin-bottom: 0;">* The 3D shadow is auto-calculated perfectly based on your background choice.</div>
+    <div class="section-title" style="margin-top: 16px;">Presets</div>
+    <div class="presets" id="mechPresets"></div>
   </div>
 
   <script src="options.js"></script>

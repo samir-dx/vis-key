@@ -6,7 +6,8 @@
     body { width: 280px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 16px; background: #f9f9f9; color: #333; margin: 0; }
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .header { font-weight: 600; font-size: 16px; }
-    .settings-link { font-size: 12px; color: #007AFF; cursor: pointer; text-decoration: none; font-weight: 500; }
+    .settings-link { font-size: 14px; color: #007AFF; cursor: pointer; text-decoration: none; font-weight: 500; margin-left: 8px;}
+    .settings-link span { font-size: 20px; position: relative; top: 1px }
     .settings-link:hover { text-decoration: underline; }
     .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; }
     .section-title { font-size: 12px; font-weight: 600; color: #777; text-transform: uppercase; margin: 16px 0 8px 0; letter-spacing: 0.5px; }
@@ -44,13 +45,12 @@
 <body>
   <div class="header-bar">
     <div class="header">vis-key</div>
-    <a href="#" id="openSettings" class="settings-link">⚙ Settings</a>
+    <div>
+        <label class="switch"><input type="checkbox" id="toggleVisualizer"><span class="slider"></span></label>
+    <a href="#" id="openSettings" class="settings-link"><span>⚙</span> Settings</a>
+    </div>
   </div>
   
-  <div class="row">
-    <span>Enable Overlay</span>
-    <label class="switch"><input type="checkbox" id="toggleVisualizer"><span class="slider"></span></label>
-  </div>
   <div class="row">
     <span>Auto-hide Output</span>
     <label class="switch"><input type="checkbox" id="toggleAutoHide"><span class="slider"></span></label>
