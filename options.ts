@@ -16,12 +16,11 @@ const termPresets = [
 ];
 
 const mechPresets = [
-  { name: 'Classic', bg: '#ffffff', text: '#000000' },
+  { name: 'Carbon', bg: '#ffffff', text: '#000000' },
   { name: 'Matrix', bg: '#00ff00', text: '#000000' },
   { name: 'Dracula', bg: '#ff79c6', text: '#282a36' },
   { name: 'CyberPunk', bg: '#00ffff', text: '#090422' },
   { name: 'Monokai', bg: '#ff1d70', text: '#272822' },
-  { name: 'Carbon', bg: '#f2f2f2', text: '#2b2b2b' },
   { name: 'Vapor', bg: '#ff71ce', text: '#05ffa1' },
   { name: 'Matcha', bg: '#e1eac2', text: '#4a5240' },
   { name: 'Midnight', bg: '#7aa2f7', text: '#1a1b26' }
