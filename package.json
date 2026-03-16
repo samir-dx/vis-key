@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Keystroke Visualizer Chrome Extension",
   "scripts": {
-    "build": "tsc && cp manifest.json popup.html options.html dist/ 2>/dev/null || true",
+    "build": "tsc && cp manifest.json popup.html options.html icon.png dist/ 2>/dev/null || true",
     "watch": "tsc -w"
   },
   "devDependencies": {
